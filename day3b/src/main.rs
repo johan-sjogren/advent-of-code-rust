@@ -1,30 +1,43 @@
-use std::collections::HashSet;
+use itertools::Itertools;
+// use std::collections::HashSet;
+use std::fs;
 
 fn main() {
+
     let alphabet: Vec<_> = String::from_utf8((b'a'..=b'z').chain(b'A'..=b'Z').collect())
         .unwrap()
         .chars()
         .map(|c| String::from(c))
         .collect();
+
+    let input_vec: Vec<String> = fs::read_to_string("day3.txt")
+        .expect("failed to load")
+        .lines()
+        .map(|t| String::from(t))
+        .collect();
+
     let mut sum = 0;
 
-    for line in include_str!("../day3.txt").lines() {
-        let split_arr: Vec<String> = line.chars().map(|t| String::from(t)).collect();
-        let mid_point: usize = split_arr.len() / 2;
-        let first_comp: Vec<String> = split_arr[..mid_point].to_vec();
-        let second_comp: Vec<String> = split_arr[mid_point..].to_vec();
-        let set1: HashSet<String> = HashSet::from_iter(first_comp);
-        let set2: HashSet<String> = HashSet::from_iter(second_comp);
-        println!("{:?}", set1);
-        let in_both: Vec<_> = Vec::from_iter(set1.intersection(&set2));
+    for line in input_vec.chunks(3) {
+        // let set1: HashSet<char> = HashSet::from_iter(line[0].chars());
+        // let set2: HashSet<char> = HashSet::from_iter(line[1].chars());
+        // let overlap: String = set1.intersection(&set2).collect();
 
-        let mut index: u32 = alphabet
-            .iter()
-            .position(|r| r == in_both[0])
-            .unwrap()
-            .try_into()
-            .expect("Could not convert to int");
-        index += 1;
+        let overlap = line[0]
+            .chars()
+            .into_iter()
+            .filter(|k| line[1].chars().contains(k))
+            .filter(|k| line[2].chars().contains(k))
+            .take(1)
+            .collect::<String>();
+
+        let index: u32 = match alphabet.iter().position(|r| r == &overlap) {
+            Some(p) => p + 1,
+            None => 0,
+        }
+        .try_into()
+        .expect("Could not convert to int");
+
         sum += index;
     }
     println!("{}", sum);
