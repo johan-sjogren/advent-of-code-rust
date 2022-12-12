@@ -1,82 +1,54 @@
+use itertools::Itertools;
 use std::fs;
 
-struct AssignmentRange {
-    start: u32,
-    end: u32
+struct Supplies {
+    storage_map: Vec<Vec<char>>,
 }
 
-impl AssignmentRange {
-    fn contains(&self, other: &Self) -> bool {
-        if self.start > other.start{
-            return false
-        } else if self.end < other.end {
-            return false
-        }
-        else {
-            return true
-        }
+impl Supplies {
+    fn from_strngs(input: &Vec<String>)-> Supplies {
+    let test: Vec<Vec<&str>>= supplies
+         .iter()
+         .map(|b| b.as_bytes()
+         .chunks(4)
+         .map(std::str::from_utf8)
+         .collect::<Result<Vec<&str>, _>>()
+         .unwrap()).collect();
+         
     }
 }
 
-impl AssignmentRange {
-    fn overlaps(&self, other: &Self) -> bool {
-        if self.end < other.start{
-            return false
-        }
-        else if self.start > other.end {
-            return false
-        }
-        else {
-            return true
-        }
-    }
-}
-
-fn get_int(s: &str) -> u32 {
-    let int: u32 = s.replace("-", "").replace(",", "").parse().expect("Bla");
-    int
-}
-
-fn get_range(s: &str) -> AssignmentRange {
-    let (start, end) = s.split_at(s.find("-").unwrap());
-    AssignmentRange {start: get_int(start), end: get_int(end)}
-}
-
-
-fn find_contained(input: &Vec<String>) -> u32 {
-    let mut count: u32 = 0;
-    for line in input {
-        let (assg1, assg2) = line.split_at(line.find(',').unwrap());
-        let range1= get_range(assg1);
-        let range2= get_range(assg2);
-        if range1.contains(&range2) || range2.contains(&range1) {
-            count += 1;
-        }
-    }
-    count
-}
-
-fn find_overlapping(input: &Vec<String>) -> u32 {
-    let mut count: u32 = 0;
-    for line in input {
-        let (assg1, assg2) = line.split_at(line.find(',').unwrap());
-        let range1= get_range(assg1);
-        let range2= get_range(assg2);
-        if range1.overlaps(&range2) || range2.overlaps(&range1) {
-            count += 1;
-        }
-    }
-    count
+struct MoveAction {
+    num: u32,
+    from: u32,
+    to: u32,
 }
 
 fn main() {
-    let input_vec: Vec<String> = fs::read_to_string("day4.txt")
-        .expect("failed to load")
+    let input_vec: Vec<String> = fs::read_to_string("input.txt")
+        .expect("Failed to load file")
         .lines()
         .map(|t| String::from(t))
         .collect();
-    let n_contained = find_contained(&input_vec);
-    println!("{}", n_contained);
-    let n_overlapping = find_overlapping(&input_vec);
-    println!("{}", n_overlapping);
+    let mut supplies: Vec<String> = Vec::new();
+    let mut moves: Vec<String> = Vec::new();
+    let mut read_supplies: bool = true;
+    for line in input_vec {
+        if line.is_empty() {
+            read_supplies = false
+        } else if read_supplies {
+            supplies.push(line);
+        } else {
+            moves.push(line);
+        }
+    }
+    supplies.pop();
+
+    let supplies = Supplies::from_strings(supplies);
+    println!("{:?}", test);
+    // for line in &supplies {
+    //     let test: Vec<String> = line.chars().map(|t| String::from(t)).chunks(4).collect();
+    //     println!("{:?}", test);
+    // }
+    // println!("{:?}", moves);
 }
