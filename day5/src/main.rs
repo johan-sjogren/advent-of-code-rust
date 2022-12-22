@@ -1,5 +1,5 @@
 // use itertools::Itertools;
-use std::{fs, collections::VecDeque};
+use std::{collections::VecDeque, fs};
 
 #[derive(Debug)]
 struct MoveAction {
@@ -16,8 +16,8 @@ impl MoveAction {
             .collect::<Vec<usize>>();
         MoveAction {
             num: instructions[0],
-            from: instructions[1]-1,
-            to: instructions[2]-1,
+            from: instructions[1] - 1,
+            to: instructions[2] - 1,
         }
     }
 }
@@ -68,14 +68,16 @@ impl Supplies {
     }
 
     fn perform_collective_move(&mut self, move_action: MoveAction) {
-        for _ in 0..move_action.num {
-            let moved = self.storage_map[move_action.from].pop_front().expect("");
-            self.storage_map[move_action.to].push_front(moved);
+        let moved = self.storage_map[move_action.from]
+            .drain(..move_action.num)
+            .collect::<VecDeque<String>>();
+        for item in moved.iter().rev() {
+            self.storage_map[move_action.to].push_front(item.to_string());
         }
     }
 }
 
-fn split_moves_and_suppplies(input: Vec<String>) -> (Vec<String>, Vec<String>) {
+fn split_moves_and_suppplies(input: &Vec<String>) -> (Vec<String>, Vec<String>) {
     let mut supplies: Vec<String> = Vec::new();
     let mut moves: Vec<String> = Vec::new();
     let mut read_supplies: bool = true;
@@ -83,15 +85,48 @@ fn split_moves_and_suppplies(input: Vec<String>) -> (Vec<String>, Vec<String>) {
         if line.is_empty() {
             read_supplies = false
         } else if read_supplies {
-            supplies.push(line);
+            supplies.push(line.to_string());
         } else {
-            moves.push(line);
+            moves.push(line.to_string());
         }
     }
     supplies.pop();
     (supplies, moves)
 }
 
+fn part1(input_vec: &Vec<String>) {
+    let (supplies, moves) = split_moves_and_suppplies(input_vec);
+
+    let mut supplies = Supplies::from_strings(&supplies);
+    println!("{:?}", supplies.storage_map);
+    for move_action in moves {
+        supplies.perform_move(MoveAction::from_string(&move_action));
+    }
+    println!("{:?}", supplies.storage_map);
+    let firsts: String = supplies
+        .storage_map
+        .iter()
+        .map(|vec| String::from(&vec[0]))
+        .collect::<String>();
+    println!("{}", firsts);
+}
+
+fn part2(input_vec: &Vec<String>) {
+    let (supplies, moves) = split_moves_and_suppplies(input_vec);
+
+    let mut supplies = Supplies::from_strings(&supplies);
+    println!("{:?}", supplies.storage_map);
+    for move_action in moves {
+        supplies.perform_collective_move(MoveAction::from_string(&move_action));
+    }
+    println!("{:?}", supplies.storage_map);
+    let firsts: String = supplies
+        .storage_map
+        .iter()
+        .map(|vec| String::from(&vec[0]))
+        .collect::<String>();
+    println!("{}", firsts);
+}
 fn main() {
     let input_vec: Vec<String> = fs::read_to_string("input.txt")
         .expect("Failed to load file")
@@ -99,15 +134,6 @@ fn main() {
         .map(|t| String::from(t))
         .collect();
 
-    let (supplies, moves) = split_moves_and_suppplies(input_vec);
-
-    let mut supplies = Supplies::from_strings(&supplies);
-    // println!("{:?}", supplies.storage_map);
-    println!("{:?}", MoveAction::from_string(&moves[0]));
-    for move_action in moves {
-        supplies.perform_move(MoveAction::from_string(&move_action));
-    }
-    println!("{:?}", supplies.storage_map);
-    let firsts: String = supplies.storage_map.iter().map(|vec| String::from(&vec[0])).collect::<String>();
-    println!("{}", firsts);
+    part1(&input_vec);
+    part2(&input_vec);
 }
